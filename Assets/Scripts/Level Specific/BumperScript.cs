@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BumperScript : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D other){
 		if (other.tag == "Player") {
-			Debug.Break ();
+			Player.TotalScore += Player.score-50;
+			//Player.LastScore = Player.score;
+			Player.SaveGameInfo();
+			SceneManager.LoadScene (1);
 			return;
 		}
 
