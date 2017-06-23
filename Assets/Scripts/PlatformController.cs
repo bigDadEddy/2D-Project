@@ -12,6 +12,8 @@ public class PlatformController : RaycastController {
 	public float speed;
 	public bool cyclic;
 	public float waitTime;
+	[Range(0, 3)]
+	public float easeAmount;
 
 	int fromWaypointIndex;
 	float percentBetweenWaypoints;
@@ -41,10 +43,15 @@ public class PlatformController : RaycastController {
 		MovePassengers (false);
 	}
 
+	float Ease(float x){
+		float a = easeAmount + 1;
+		return Mathf.Pow (x, a) / (Mathf.Pow (x, a) + Mathf.Pow (1 - x, a));
+	}
+
 	Vector3 CalculatePlatformMovement(){
 
 		if (Time.time < nextMoveTime) {
-			return 0;
+			return Vector3.zero;
 		}
 
 		fromWaypointIndex %= globalWaypoints.Length;
@@ -61,8 +68,10 @@ public class PlatformController : RaycastController {
 				if (fromWaypointIndex >= globalWaypoints.Length - 1) {
 					fromWaypointIndex = 0;
 					System.Array.Reverse (globalWaypoints);
+					nextMoveTime = Time.time + waitTime;
 				}
 			}
+			nextMoveTime = Time.time + waitTime;
 		}
 
 		return newPos - transform.position;

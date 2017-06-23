@@ -11,18 +11,23 @@ public class Controller2D : RaycastController {
 
 	public override void Start(){
 		base.Start ();
+		collisions.faceDir = 1;
 	}
 
 	public void Move(Vector3 velocity, bool standingOnPlatform = false) {
 		UpdateRaycastOrigins ();
 		collisions.Reset ();
 
+		if (velocity.x != 0) {
+			collisions.faceDir = (int)Mathf.Sign (velocity.x);
+		}
+
 		if (velocity.y < 0) {
 			DescendSlope (ref velocity);
 		}
-		if (velocity.x != 0) {
-			HorizontalCollisions (ref velocity);
-		}
+
+		HorizontalCollisions (ref velocity);
+
 		if (velocity.y != 0) {
 			VerticalCollisions (ref velocity);
 		}
@@ -34,8 +39,12 @@ public class Controller2D : RaycastController {
 	}
 
 	void HorizontalCollisions(ref Vector3 velocity) {
-		float directionX = Mathf.Sign (velocity.x);
+		float directionX = collisions.faceDir;
 		float rayLength = Mathf.Abs (velocity.x) + skinWidth;
+
+		if (Mathf.Abs (velocity.x) < skinWidth) {
+			rayLength = 2 * skinWidth;
+		}
 
 		for (int i = 0; i < horizontalRayCount; i ++) {
 			Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomLeft:raycastOrigins.bottomRight;
@@ -66,6 +75,12 @@ public class Controller2D : RaycastController {
 
 					collisions.left = directionX == -1;
 					collisions.right = directionX == 1;
+					if (collisions.left == true) {
+						collisions.objectLeft = hit.transform.gameObject;
+					}
+					if (collisions.right == true) {
+						collisions.objectRight = hit.transform.gameObject;
+					}
 				}
 			}
 		}
@@ -92,6 +107,12 @@ public class Controller2D : RaycastController {
 
 				collisions.below = directionY == -1;
 				collisions.above = directionY == 1;
+				if (collisions.below == true) {
+					collisions.objectBelow = hit.transform.gameObject;
+				}
+				if (collisions.above == true) {
+					collisions.objectAbove = hit.transform.gameObject;
+				}
 			}
 		}
 
@@ -154,15 +175,21 @@ public class Controller2D : RaycastController {
 		public bool above, below;
 		public bool left, right;
 
+		public GameObject objectAbove, objectBelow;
+		public GameObject objectLeft, objectRight;
+
+
 		public bool climbingSlope;
-		public float slopeAngle, slopeAngleOld;
 		public bool descendingSlope;
+		public float slopeAngle, slopeAngleOld;
+		public int faceDir;
+
 
 		public void Reset(){
 			above = below = false;
 			left = right = false;
 			climbingSlope = false;
-			descendingSlope = true;
+			descendingSlope = false;
 
 			slopeAngleOld = slopeAngle;
 			slopeAngle = 0;
