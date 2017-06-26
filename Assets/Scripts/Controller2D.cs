@@ -5,7 +5,8 @@ using UnityEngine;
 public class Controller2D : RaycastController {
 	
 	public CollisionInfo collisions;
-	Vector2 playerInput;
+	[HideInInspector]
+	public Vector2 playerInput;
 
 	float maxClimbSlope = 80;
 	float maxDescendAngle = 70;
