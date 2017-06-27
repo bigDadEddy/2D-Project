@@ -4,25 +4,25 @@ using UnityEngine;
 [RequireComponent (typeof (Controller2D))]
 public class Player2D : MonoBehaviour {
 
-	//1 unit equals ~.5m
-	//intuitive physics variables
 	public float maxJumpHeight = 4;
 	public float minJumpHeight = 1;
 	public float timeToJumpApex = .4f;
-	float moveSpeed = 6;
-	float accelerationTimeAirborne = .2f;
-	float accelerationTimeGrounded = .15f;
-
-	//un-intuitive behind the scene variable
-	float gravity;
-	float maxJumpVelocity;
-	float minJumpVelocity;
-	Vector3 velocity;
-	float velocityXSmoothing;
+	public float moveSpeed = 6;
+	public float accelerationTimeAirborne = .2f;
+	public float accelerationTimeGrounded = .15f;
 
 	Controller2D controller;
 
-	// Use this for initialization
+	Vector2 directionalInput;
+
+	float gravity;
+	float maxJumpVelocity;
+	float minJumpVelocity;
+	float velocityXSmoothing;
+	Vector3 velocity;
+
+	bool wallStuck = false;
+
 	void Start () {
 		controller = GetComponent<Controller2D> ();
 
@@ -31,17 +31,58 @@ public class Player2D : MonoBehaviour {
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
 	}
 
+	public void SetDirectionalInput (Vector2 input){
+		directionalInput = input;
+	}
+
+	public void OnJumpInputDown(){
+		if (Input.GetKeyDown (KeyCode.UpArrow) && controller.collisions.below) {
+			velocity.y = maxJumpVelocity;
+		}
+	}
+
+	public void OnJumpInputUp(){
+		if (Input.GetKeyUp (KeyCode.Space)) {
+			if (velocity.y > minJumpVelocity) {
+				velocity.y = minJumpVelocity;
+			}
+		}
+	}
+
 	void Update (){
-		Vector2 input = new Vector2(Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw ("Vertical"));
+		calculateVelocity ();
 
-		float targetVelocityX = input.x * moveSpeed;
+		CalculateWallClimbing ();
+		OnJumpInputDown ();
+		OnJumpInputUp ();
+
+		calculateGravity ();
+
+		controller.Move (velocity * Time.deltaTime, directionalInput);
+
+		//reset gravity force when on ground
+		if(controller.collisions.above || controller.collisions.below){
+			velocity.y = 0;
+		}
+	}
+
+	void calculateVelocity(){
+		float targetVelocityX = directionalInput.x * moveSpeed;
 		velocity.x = Mathf.SmoothDamp (velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below)?accelerationTimeGrounded:accelerationTimeAirborne);
+	}
 
-		bool wallSliding = false;
-		bool wallStuck = false;
+	void calculateGravity(){ 
+		if (wallStuck) {
+			velocity.y = 0;
+		} 
+		else {
+			velocity.y += gravity * Time.deltaTime;	
+		}
 
-		//all wallsliding is contained in this if
-		//WallProperties is only accessable inside this statement
+		wallStuck = false;
+	}
+
+	public void CalculateWallClimbing(){
 		if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.below && velocity.y < 0) {
 
 			int wallDirX = (controller.collisions.left) ? -1 : 1;
@@ -56,8 +97,6 @@ public class Player2D : MonoBehaviour {
 			}
 
 			if (wall.GetComponent<WallProperties> () != null) {
-				wallSliding = true;
-
 				WallProperties wallProperties;
 				wallProperties = wall.GetComponent<WallProperties> ();
 				//print (wallProperties.wallSlippery);
@@ -70,7 +109,7 @@ public class Player2D : MonoBehaviour {
 					velocity.x = 0;
 					velocityXSmoothing = 0;
 
-					if (input.x != 0 && input.x != wallDirX) {
+					if (directionalInput.x != 0 && directionalInput.x != wallDirX) {
 						wallProperties.timeToWallUnJumpStick -= Time.deltaTime;
 
 					} else {
@@ -81,10 +120,10 @@ public class Player2D : MonoBehaviour {
 				}
 
 				if (Input.GetKeyDown (KeyCode.UpArrow)) {
-					if (wallDirX == input.x) {
+					if (wallDirX == directionalInput.x) {
 						velocity.x = -wallDirX * wallProperties.wallJumpClimb.x;
 						velocity.y = wallProperties.wallJumpClimb.y;
-					} else if (input.x == 0) {
+					} else if (directionalInput.x == 0) {
 						velocity.x = -wallDirX * wallProperties.wallJumpOff.x;
 						velocity.y = wallProperties.wallJumpOff.y;
 					} else {
@@ -92,8 +131,8 @@ public class Player2D : MonoBehaviour {
 						velocity.y = wallProperties.wallLeapOff.y;
 					}
 				} 
-				if (input.x == 0 && input.y == 0) {
-					
+				if (directionalInput.x == 0 && directionalInput.y == 0) {
+
 					if (wallProperties.timeToWallUnStick > 0) {
 						wallProperties.timeToWallUnStick -= Time.deltaTime;
 						wallStuck = true;
@@ -103,30 +142,6 @@ public class Player2D : MonoBehaviour {
 				}
 
 			}
-		}
-
-
-		if (Input.GetKeyDown (KeyCode.UpArrow) && controller.collisions.below) {
-			velocity.y = maxJumpVelocity;
-		}
-		if (Input.GetKeyUp (KeyCode.Space)) {
-			if (velocity.y > minJumpVelocity) {
-				velocity.y = minJumpVelocity;
-			}
-		}
-
-		if (!(wallStuck && input.y == 0 && input.x == 0)) {
-			velocity.y += gravity * Time.deltaTime;		
-		} else {
-			velocity.x = 0;
-			velocity.y = 0;
-
-		}
-
-		controller.Move (velocity * Time.deltaTime, input);
-
-		if (controller.collisions.above || controller.collisions.below) {
-			velocity.y = 0;
 		}
 	}
 }

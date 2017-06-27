@@ -17,17 +17,17 @@ public class CameraFollowScript : MonoBehaviour {
 	float currentLookAheadX;
 	float targetLookAheadx;
 	float lookAheadDirX;
-	float smoothVelocityX;
-	float smoothVelocityY;
+	float smoothvelocityX;
+	float smoothvelocityY;
 
 	bool lookAheadStopped;
 
 	void Start(){
-		focusArea = new FocusArea (target.collider.bounds, focusAreaSize);
+		focusArea = new FocusArea (target.Collider.bounds, focusAreaSize);
 	}
 
 	void LateUpdate(){
-		focusArea.Update (target.collider.bounds);
+		focusArea.Update (target.Collider.bounds);
 
 		Vector2 focusPosition = focusArea.center + Vector2.up * verticalOffset;
 
@@ -44,7 +44,7 @@ public class CameraFollowScript : MonoBehaviour {
 		}
 
 		
-		currentLookAheadX = Mathf.SmoothDamp (currentLookAheadX, targetLookAheadx, ref smoothVelocityX, horizontalSmoothTime);
+		currentLookAheadX = Mathf.SmoothDamp (currentLookAheadX, targetLookAheadx, ref smoothvelocityX, horizontalSmoothTime);
 
 		focusPosition += Vector2.right * currentLookAheadX;
 		transform.position = (Vector3)focusPosition + Vector3.forward * -10;

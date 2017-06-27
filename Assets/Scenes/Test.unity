@@ -216,6 +216,7 @@ GameObject:
   - component: {fileID: 798335526}
   - component: {fileID: 798335525}
   - component: {fileID: 798335524}
+  - component: {fileID: 798335530}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -237,6 +238,9 @@ MonoBehaviour:
   maxJumpHeight: 4
   minJumpHeight: 1
   timeToJumpApex: 0.45
+  moveSpeed: 6
+  accelerationTimeAirborne: 0.2
+  accelerationTimeGrounded: 0.15
 --- !u!114 &798335525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255,7 +259,7 @@ MonoBehaviour:
   verticalRayCount: 4
   horizontalRaySpacing: 0
   verticalRaySpacing: 0
-  collider: {fileID: 0}
+  Collider: {fileID: 0}
   playerInput: {x: 0, y: 0}
 --- !u!61 &798335526
 BoxCollider2D:
@@ -334,6 +338,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &798335530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 798335523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b49721bb5618ea4ca8a71a7a30edbfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &831907641
 GameObject:
   m_ObjectHideFlags: 0
