@@ -37,7 +37,15 @@ public class Player2D : MonoBehaviour {
 
 	public void OnJumpInputDown(){
 		if (Input.GetKeyDown (KeyCode.UpArrow) && controller.collisions.below) {
-			velocity.y = maxJumpVelocity;
+			if (controller.collisions.slidingDownSlope) {
+				if (directionalInput.x != -Mathf.Sign (controller.collisions.slopeNormal.x)) { //not jumping aginst max slope
+					velocity.y = maxJumpVelocity * controller.collisions.slopeNormal.y;
+					velocity.x = maxJumpVelocity * controller.collisions.slopeNormal.x;
+				}
+			}
+			else{
+				velocity.y = maxJumpVelocity;
+			}
 		}
 	}
 
@@ -62,7 +70,11 @@ public class Player2D : MonoBehaviour {
 
 		//reset gravity force when on ground
 		if(controller.collisions.above || controller.collisions.below){
-			velocity.y = 0;
+			if (controller.collisions.slidingDownSlope) {
+				velocity.y += controller.collisions.slopeNormal.y * -gravity * Time.deltaTime;
+			} else {
+				velocity.y = 0;
+			}
 		}
 	}
 
